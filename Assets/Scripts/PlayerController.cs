@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using System.Security.Cryptography.X509Certificates;
+﻿
 using UnityEngine;
 public class PlayerController : MonoBehaviour
 {
@@ -12,11 +10,15 @@ public class PlayerController : MonoBehaviour
     private SpriteRenderer sr;
     public Transform attackPointR;
     public Transform attackPointL;
+    public Joystick joystick;
 
     public float movementSpeed = 0f;
     public float jumpForce;
     private int currentHealth;
+    private int comboCounter;
 
+    public float attackRate = 2f;
+    private float nextAttackTime;
 
     public LayerMask EnemyLayers;
     public LayerMask PlatformLayer;
@@ -33,12 +35,8 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
-        if (Input.GetMouseButtonDown(0))
-        {
-            animator.SetTrigger("Attack");
-        }
+        
 
-        IsJumping();
 
 
     }
@@ -70,11 +68,12 @@ public class PlayerController : MonoBehaviour
     void FixedUpdate()
     {
         Movement();
+        IsJumping();
     }
 
     void Movement()
     {
-        if (Input.GetKey(KeyCode.D))
+        if (joystick.Horizontal >= 0.2f)
         {
             movementSpeed = 8f;
             sr.flipX = true;
@@ -82,7 +81,7 @@ public class PlayerController : MonoBehaviour
             transform.Translate(movementSpeed * Time.deltaTime, 0, 0);
 
         }
-        else if (Input.GetKey(KeyCode.A))
+        else if (joystick.Horizontal <= -0.5f)
         {
             movementSpeed = 8f;
             sr.flipX = false;
@@ -118,8 +117,9 @@ public class PlayerController : MonoBehaviour
 
     private void IsJumping()
     {
+        float verticalMove = joystick.Vertical;
         //Checking jump, if the player can jump, will do the jump
-        if (Input.GetKeyDown(KeyCode.W) && IsGrounded())
+        if (verticalMove >= .5f && IsGrounded())
         {
             mainPlayerRb.AddForce(Vector2.up * jumpForce);
         }
@@ -133,6 +133,7 @@ public class PlayerController : MonoBehaviour
             animator.SetBool("IsJumping", true);
 
         }
+
     }
 
     public void TakeDamage(int damage)
@@ -154,30 +155,18 @@ public class PlayerController : MonoBehaviour
         
         this.enabled = false;
     }
+
+    
+    public void basicAttackButton()
+    {
+        
+        if (!animator.GetCurrentAnimatorStateInfo(0).IsName("MainPlayer_Attack"))
+        {
+            animator.SetTrigger("Attack");
+        }
+
+    }
+
 }
 
-//IEnumerator Attack()
-        //{
-        //    Collider2D[] hitEnemies;
-
-        //    //attack animation
-        //    animator.SetTrigger("Attack");
-        //    //attack range
-        //    if (sr.flipX == false)
-        //    {
-        //        yield return new WaitForSeconds(0.4f);
-        //        hitEnemies = Physics2D.OverlapCircleAll(attackPointR.position, attackRange, EnemyLayers);
-        //    }
-        //    else
-        //    {
-        //        yield return new WaitForSeconds(0.4f);
-        //        hitEnemies = Physics2D.OverlapCircleAll(attackPointL.position, attackRange, EnemyLayers);
-        //    }
-        //    //deal dmg
-        //    foreach (Collider2D enemy in hitEnemies)
-        //    {
-        //        Debug.Log("Hit!");
-        //        enemy.GetComponent<Enemy>().TakeDamage(attackDamage);
-        //    }
-        //}
     
