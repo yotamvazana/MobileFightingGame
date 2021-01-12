@@ -11,6 +11,8 @@ public class PlayerController : MonoBehaviour
     public Transform attackPointR;
     public Transform attackPointL;
     public Joystick joystick;
+    public ParticleSystem ps;
+
 
     public float movementSpeed = 0f;
     public float jumpForce;
@@ -69,6 +71,7 @@ public class PlayerController : MonoBehaviour
     {
         Movement();
         IsJumping();
+        
     }
 
     void Movement()
@@ -166,6 +169,25 @@ public class PlayerController : MonoBehaviour
         }
 
     }
+
+    public void DashButton()
+    {
+        ps.Play();
+        if (joystick.Horizontal >= 0.2f)
+        {
+            sr.flipX = true;
+            animator.SetFloat("Speed", movementSpeed);
+            transform.Translate(2, 0, 0);
+        }
+        else if (joystick.Horizontal <= -0.5f)
+        {
+            sr.flipX = false;
+            animator.SetFloat("Speed", movementSpeed);
+            transform.Translate(2  * -1, 0, 0);
+        }
+    }
+
+    
 
 }
 
