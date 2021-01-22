@@ -1,23 +1,31 @@
 ﻿
+using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
+
 public class PlayerController : MonoBehaviour
 {
     [SerializeField]private PlayerStats playerStats;
 
+
+    
     public Animator animator;
+    public Animation dashButtonCDAnim;
     private Rigidbody2D mainPlayerRb;
     private Collider2D playerCollider2D;
     private SpriteRenderer sr;
     public Transform attackPointR;
     public Transform attackPointL;
     public Joystick joystick;
-    public ParticleSystem ps;
+    public ParticleSystem firePs;
 
+    public List<ParticleSystem> CloudAttackList;
 
     public float movementSpeed = 0f;
     public float jumpForce;
     private int currentHealth;
     private int comboCounter;
+    public bool isDashing = false;
 
     public float attackRate = 2f;
     private float nextAttackTime;
@@ -27,6 +35,7 @@ public class PlayerController : MonoBehaviour
 
     void Start()
     {
+
         mainPlayerRb = GetComponent<Rigidbody2D>();
         playerCollider2D = GetComponent<Collider2D>();
         sr = GetComponent<SpriteRenderer>();
@@ -37,10 +46,10 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
-        
-
-
-
+        if (dashButtonCDAnim.isPlaying) // checking if the dash is on cooldown for enemy AI
+        {
+            isDashing = false;
+        }
     }
 
 
@@ -69,6 +78,8 @@ public class PlayerController : MonoBehaviour
 
     void FixedUpdate()
     {
+        //ps.transform.position = Vector3.MoveTowards(ps.transform.position,transform.position, 1000f);
+
         Movement();
         IsJumping();
         
@@ -172,23 +183,40 @@ public class PlayerController : MonoBehaviour
 
     public void DashButton()
     {
-        ps.Play();
-        if (joystick.Horizontal >= 0.2f)
+        if (!dashButtonCDAnim.isPlaying)
         {
-            sr.flipX = true;
-            animator.SetFloat("Speed", movementSpeed);
-            transform.Translate(2, 0, 0);
+            isDashing = true;
+            LeanTween.followLinear(firePs.transform, gameObject.transform, LeanProp.localX, 7f);
+            firePs.transform.position = transform.position;
+            firePs.Play();
+            if (joystick.Horizontal >= 0.2f)
+            {
+                sr.flipX = true;
+                animator.SetFloat("Speed", movementSpeed);
+                transform.Translate(2, 0, 0);
+            }
+            else if (joystick.Horizontal <= -0.5f)
+            {
+                sr.flipX = false;
+                animator.SetFloat("Speed", movementSpeed);
+                transform.Translate(2 * -1, 0, 0);
+            }
+
+            dashButtonCDAnim.Play();
         }
-        else if (joystick.Horizontal <= -0.5f)
-        {
-            sr.flipX = false;
-            animator.SetFloat("Speed", movementSpeed);
-            transform.Translate(2  * -1, 0, 0);
-        }
+
     }
 
-    
 
+    public void PlayerCloudAttackButton()
+    {
+        foreach (ParticleSystem cloudAttack in CloudAttackList)
+        {
+            cloudAttack.Play();
+        }
+       
+
+    }
 }
 
     
